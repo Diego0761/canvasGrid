@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canvas Grid</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+
+      .info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgb(7, 7, 7);
+        padding: 5px;
+        border-radius: 5px;
+        font-family: Arial, san s-serif;
+        font-size: 22px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      span {
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div class="info">
+      <span id="mouseX">mouse X: 0 </span>
+      <span id="mouseY">mouse Y: 0 </span>
+      <span id="startXY">start X, Y = 0, 0</span>
+      <span id="originPosXY">origin X, Y = 0, 0</span>
+      <span id="globalMousePosXY">global Mouse X, Y = 0, 0</span>
+    </div>
+
+    <script>
+      let originPos = { x: 0, y: 0 }
+
+      let lastMouse = { x: 0, y: 0 }
+
+      let globalMousePos = { x: 0, y: 0 }
+
+      let startOrigin = { x: 0, y: 0 }
+
+      let square = {
+        worldX: 1024,
+        worldY: 512,
+        setChunk(chunk) {
+          this.worldX = chunk.x * 32
+          this.worldY = chunk.y * 32
+        },
+        size: 32
+      }
+
+      square.setChunk({ x: 16, y: 16 })
+
+      let mouseState = 'off'
+
+      let a = { x: 0, y: 0 }
+
+      const canvas = document.getElementById('canvas')
+      const ctx = canvas.getContext('2d')
+
+      let startX, startY
+
+      function drawGrid() {
+        const gridSize = 32
+
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.strokeStyle = '#00000033'
+
+        ctx.fillRect(
+          square.worldX + originPos.x,
+          square.worldY + originPos.y,
+          square.size,
+          square.size
+        )
+
+        startX = (originPos.x % gridSize) - gridSize
+        startY = (originPos.y % gridSize) - gridSize
+
+        for (let x = startX; x <= canvas.width; x += gridSize) {
+          ctx.beginPath()
+          ctx.moveTo(x, 0)
+          ctx.lineTo(x, canvas.height)
+          ctx.stroke()
+        }
+
+        for (let y = startY; y <= canvas.height; y += gridSize) {
+          ctx.beginPath()
+          ctx.moveTo(0, y)
+          ctx.lineTo(canvas.width, y)
+          ctx.stroke()
+        }
+      }
+
+      // -----
+
+      canvas.addEventListener('mousedown', e => {
+        mouseState = 'on'
+
+        console.log('Mouse Down at:', e.clientX, e.clientY)
+        lastMouse.x = e.clientX
+        lastMouse.y = e.clientY
+        startOrigin.x = originPos.x
+        startOrigin.y = originPos.y
+      })
+
+      canvas.addEventListener('mouseup', e => {
+        mouseState = 'off'
+
+        console.log('Mouse Up at:', e.clientX, e.clientY)
+      })
+
+      canvas.addEventListener('mousemove', e => {
+        document.getElementById('mouseX').textContent = 'mouse X: ' + e.clientX
+        document.getElementById('mouseY').textContent = 'mouse Y: ' + e.clientY
+        document.getElementById('startXY').textContent =
+          'start X, Y = ' + startX + ', ' + startY
+        document.getElementById('originPosXY').textContent =
+          'origin X, Y = ' + originPos.x + ', ' + originPos.y
+        document.getElementById('globalMousePosXY').textContent =
+          'global Mouse X, Y = ' + globalMousePos.x + ', ' + globalMousePos.y
+
+        globalMousePos.x = e.clientX + originPos.x
+        globalMousePos.y = e.clientY + originPos.y
+
+        if (mouseState === 'on') {
+          console.log('Mouse Move at:', e.clientX, e.clientY)
+
+          const deltaX = e.clientX - lastMouse.x
+          const deltaY = e.clientY - lastMouse.y
+
+          originPos.x += deltaX
+          originPos.y += deltaY
+
+          lastMouse.x = e.clientX
+          lastMouse.y = e.clientY
+
+          drawGrid()
+        }
+      })
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'r') {
+          ctx.fillStyle = 'red'
+          ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100)
+        }
+      })
+
+      drawGrid()
+
+      window.addEventListener('resize', drawGrid)
+    </script>
+  </body>
+</html>
