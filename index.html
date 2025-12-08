@@ -230,8 +230,6 @@
             x: x,
             y: y
           })
-          console.log('Painted chunk at:', x, y)
-          console.log('Colored Chunks:', coloredChunks)
         }
 
         localStorage.setItem('coloredChunks', JSON.stringify(coloredChunks))
@@ -364,13 +362,11 @@
         if (paint && mouseState === 'on') {
           paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
           drawGrid()
-          console.log(mouseState)
           return
         }
 
         if (erase && mouseState === 'on') {
           Erase()
-          console.log(mouseState)
           return
         }
 
