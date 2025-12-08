@@ -34,7 +34,7 @@
       #clear {
         margin-top: 10px;
         padding: 10px 20px;
-        background-color: #444;
+        background: #444;
         color: white;
         font-size: 24px;
         border: none;
@@ -44,24 +44,95 @@
         top: 15px;
         right: 15px;
       }
+
+      nav {
+        display: flex;
+        background-color: #fff4c4;
+        height: 100px;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+      }
+
+      nav > button {
+        background-color: white;
+        border: none;
+        color: white;
+        font-size: 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+        border: 2px solid transparent;
+      }
+
+      nav > button.selected {
+        border: 2px solid rgb(252, 125, 125);
+      }
+
+      nav > button:hover {
+        background-color: #eeeeee;
+      }
+
+      .icons {
+        width: 48px;
+        height: 48px;
+      }
     </style>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas"> </canvas>
+
+    <nav>
+      <button id="move" class="selected">
+        <img class="icons" src="assets/arrows-out-cardinal.svg" alt="move" />
+      </button>
+
+      <button id="paint">
+        <img class="icons" src="assets/paint-brush.svg" alt="paint" />
+      </button>
+    </nav>
 
     <div class="info">
-      <span id="mouseXY">mouse XY: 0, 0 </span>
-      <span id="startXY">start X, Y = 0, 0</span>
-      <span id="originPosXY">origin X, Y = 0, 0</span>
-      <span id="globalMousePosXY">global Mouse X, Y = 0, 0</span>
+      <span id="mouseXY">mouse X, Y: [0, 0] </span>
+      <span id="startXY">start X, Y = [0, 0]</span>
+      <span id="originPosXY">origin X, Y = [0, 0]</span>
+      <span id="globalMousePosXY">global Mouse X, Y = [0, 0]</span>
     </div>
+
     <button id="clear" onclick="clearGrid()">clear</button>
 
     <script>
+      const buttons = [
+        document.getElementById('move'),
+        document.getElementById('paint')
+      ]
+      let selectedButton = buttons[0]
+
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          if (button.id === 'move') {
+            move = true
+            paint = false
+            erase = false
+          } else if (button.id === 'paint') {
+            move = false
+            paint = true
+            erase = false
+          }
+          selectedButton.classList.remove('selected')
+          button.classList.add('selected')
+          selectedButton = button
+        })
+      })
+
       let originPos = { x: 0, y: 0 }
 
       let paint = false
       let erase = false
+      let move = true
 
       let lastMouse = { x: 0, y: 0 }
 
@@ -135,8 +206,6 @@
 
       let mouseState = 'off'
 
-      let a = { x: 0, y: 0 }
-
       const canvas = document.getElementById('canvas')
       const ctx = canvas.getContext('2d')
 
@@ -144,7 +213,7 @@
 
       function drawGrid() {
         canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
+        canvas.height = window.innerHeight - 100
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.strokeStyle = '#00000033'
@@ -182,6 +251,9 @@
       canvas.addEventListener('mousedown', e => {
         mouseState = 'on'
 
+        if (selectedButton.id === 'paint') {
+        }
+
         if (e.button === 2) {
           erase = true
         }
@@ -215,28 +287,32 @@
 
       canvas.addEventListener('mousemove', e => {
         document.getElementById('mouseXY').textContent =
-          'mouse XY: ' + e.clientX + ', ' + e.clientY
+          'mouse_local: [' + e.clientX + ', ' + e.clientY + ']'
         document.getElementById('startXY').textContent =
-          'start X, Y = ' + startX + ', ' + startY
+          'start: [' + startX + ', ' + startY + ']'
         document.getElementById('originPosXY').textContent =
-          'origin X, Y = ' + originPos.x + ', ' + originPos.y
+          'origin: [' + originPos.x + ', ' + originPos.y + ']'
 
-        if (mouseState === 'off') {
-          globalMousePos.x = e.clientX - originPos.x
-          globalMousePos.y = e.clientY - originPos.y
-        }
+        globalMousePos.x = e.clientX - originPos.x
+        globalMousePos.y = e.clientY - originPos.y
 
         document.getElementById('globalMousePosXY').textContent =
-          'global Mouse X, Y = ' + globalMousePos.x + ', ' + globalMousePos.y
+          'mouse_global: [' + globalMousePos.x + ', ' + globalMousePos.y + ']'
 
-        if (mouseState === 'on') {
+        if (selectedButton.id === 'paint' && mouseState === 'on') {
+          paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
+          drawGrid()
+          console.log(mouseState)
+          return
+        }
+
+        if (mouseState === 'on' && move) {
           const deltaX = e.clientX - lastMouse.x
           const deltaY = e.clientY - lastMouse.y
 
-          //check if mouse moved enough to be considered paining
-
-          // this is causing the grid moving 10 in 10 or so
+          // this is causing the grid to move 10 in 10 or so
           // need to fix it
+          // made this to prevent small movements from triggering panning
           if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
             paint = false
             erase = false
