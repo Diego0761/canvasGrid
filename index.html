@@ -36,8 +36,7 @@
     <canvas id="canvas"></canvas>
 
     <div class="info">
-      <span id="mouseX">mouse X: 0 </span>
-      <span id="mouseY">mouse Y: 0 </span>
+      <span id="mouseXY">mouse XY: 0, 0 </span>
       <span id="startXY">start X, Y = 0, 0</span>
       <span id="originPosXY">origin X, Y = 0, 0</span>
       <span id="globalMousePosXY">global Mouse X, Y = 0, 0</span>
@@ -46,20 +45,53 @@
     <script>
       let originPos = { x: 0, y: 0 }
 
+      let paint = false
+
       let lastMouse = { x: 0, y: 0 }
 
       let globalMousePos = { x: 0, y: 0 }
 
       let startOrigin = { x: 0, y: 0 }
 
+      let gridSize = 32
+
       let square = {
         worldX: 1024,
         worldY: 512,
         setChunk(chunk) {
-          this.worldX = chunk.x * 32
-          this.worldY = chunk.y * 32
+          this.worldX = chunk.x * gridSize
+          this.worldY = chunk.y * gridSize
         },
-        size: 32
+        size: gridSize
+      }
+
+      let coloredChunks = [{ x: 20, y: 20 }]
+
+      function paintChunk(x, y) {
+        const chunk = coloredChunks.some(
+          chunk => chunk.x === x && chunk.y === y
+        )
+        if (!chunk) {
+          coloredChunks.push({
+            x: x,
+            y: y
+          })
+          console.log('Painted chunk at:', x, y)
+          console.log('Colored Chunks:', coloredChunks)
+        }
+      }
+
+      function getChunkFromWorldPos(x, y) {
+        console.log('Get chunk from world pos:', x, y)
+
+        return {
+          x: Math.floor(x / gridSize),
+          y: Math.floor(y / gridSize)
+        }
+      }
+
+      function getChunkBySize(d) {
+        return Math.floor((d - (d % gridSize)) / gridSize)
       }
 
       square.setChunk({ x: 16, y: 16 })
@@ -74,20 +106,21 @@
       let startX, startY
 
       function drawGrid() {
-        const gridSize = 32
-
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.strokeStyle = '#00000033'
 
-        ctx.fillRect(
-          square.worldX + originPos.x,
-          square.worldY + originPos.y,
-          square.size,
-          square.size
-        )
+        for (chunk in coloredChunks) {
+          const c = coloredChunks[chunk]
+          ctx.fillRect(
+            c.x * gridSize + originPos.x,
+            c.y * gridSize + originPos.y,
+            gridSize,
+            gridSize
+          )
+        }
 
         startX = (originPos.x % gridSize) - gridSize
         startY = (originPos.y % gridSize) - gridSize
@@ -111,6 +144,7 @@
 
       canvas.addEventListener('mousedown', e => {
         mouseState = 'on'
+        paint = true
 
         console.log('Mouse Down at:', e.clientX, e.clientY)
         lastMouse.x = e.clientX
@@ -122,42 +156,65 @@
       canvas.addEventListener('mouseup', e => {
         mouseState = 'off'
 
+        if (paint) {
+          paintChunk(
+            getChunkFromWorldPos(globalMousePos.x, globalMousePos.y).x,
+            getChunkFromWorldPos(globalMousePos.x, globalMousePos.y).y
+          )
+        }
+
+        drawGrid()
+
         console.log('Mouse Up at:', e.clientX, e.clientY)
+        console.log('paint ', paint)
       })
 
       canvas.addEventListener('mousemove', e => {
-        document.getElementById('mouseX').textContent = 'mouse X: ' + e.clientX
-        document.getElementById('mouseY').textContent = 'mouse Y: ' + e.clientY
+        document.getElementById('mouseXY').textContent =
+          'mouse XY: ' + e.clientX + ', ' + e.clientY
         document.getElementById('startXY').textContent =
           'start X, Y = ' + startX + ', ' + startY
         document.getElementById('originPosXY').textContent =
           'origin X, Y = ' + originPos.x + ', ' + originPos.y
+
+        if (mouseState === 'off') {
+          globalMousePos.x = e.clientX - originPos.x
+          globalMousePos.y = e.clientY - originPos.y
+        }
+
         document.getElementById('globalMousePosXY').textContent =
           'global Mouse X, Y = ' + globalMousePos.x + ', ' + globalMousePos.y
 
-        globalMousePos.x = e.clientX + originPos.x
-        globalMousePos.y = e.clientY + originPos.y
-
         if (mouseState === 'on') {
-          console.log('Mouse Move at:', e.clientX, e.clientY)
-
           const deltaX = e.clientX - lastMouse.x
           const deltaY = e.clientY - lastMouse.y
 
-          originPos.x += deltaX
-          originPos.y += deltaY
+          //check if mouse moved enough to be considered paining
+          if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            paint = false
 
-          lastMouse.x = e.clientX
-          lastMouse.y = e.clientY
+            originPos.x += deltaX
+            originPos.y += deltaY
 
-          drawGrid()
+            lastMouse.x = e.clientX
+            lastMouse.y = e.clientY
+
+            drawGrid()
+          }
         }
       })
 
-      document.addEventListener('keydown', e => {
-        if (e.key === 'r') {
-          ctx.fillStyle = 'red'
-          ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100)
+      canvas.addEventListener('contextmenu', e => {
+        e.preventDefault()
+
+        const chunk = getChunkFromWorldPos(globalMousePos.x, globalMousePos.y)
+
+        if (coloredChunks.some(c => c.x === chunk.x && c.y === chunk.y)) {
+          coloredChunks = coloredChunks.filter(
+            c => !(c.x === chunk.x && c.y === chunk.y)
+          )
+          console.log('Erased chunk at:', chunk.x, chunk.y)
+          drawGrid()
         }
       })
 
