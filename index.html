@@ -66,6 +66,7 @@
         align-items: center;
         padding: 8px;
         border: 2px solid transparent;
+        user-select: none;
       }
 
       nav > button.selected {
@@ -74,6 +75,10 @@
 
       nav > button:hover {
         background-color: #eeeeee;
+      }
+
+      canvas:hover {
+        cursor: url('assets/dot-outline.svg') 16 16, auto;
       }
 
       .icons {
@@ -92,7 +97,7 @@
     <canvas id="canvas"> </canvas>
 
     <nav>
-      <button id="move" class="selected">
+      <button id="move">
         <img class="icons" src="assets/arrows-out-cardinal.svg" alt="move" />
       </button>
 
@@ -116,6 +121,16 @@
     <button id="clear" onclick="clearGrid()">clear</button>
 
     <script>
+      // TODO
+      // ctrl + z to undo last paint/erase action
+      // color picker
+      // preview under cursor
+      // different brush sizes
+
+      let paint = false
+      let erase = false
+      let move = true
+
       const defaultStates = {
         move: {
           move: true,
@@ -134,41 +149,54 @@
         }
       }
 
-      function exitToCurrentState() {}
-
       const buttons = [
         document.getElementById('move'),
         document.getElementById('paint'),
         document.getElementById('erase')
       ]
-      let selectedButton = buttons[0]
+
+      const a = {
+        move: 0,
+        paint: 1,
+        erase: 2
+      }
+      let selectedButton =
+        buttons[a[localStorage.getItem('lastTool')]] || buttons[0]
+      selectedButton.classList.add('selected')
+      updateSelectedButton(selectedButton)
+
+      function updateSelectedButton(button) {
+        if (button.id === 'move') {
+          move = true
+          paint = false
+          erase = false
+        } else if (button.id === 'paint') {
+          move = false
+          paint = true
+          erase = false
+        } else if (button.id === 'erase') {
+          move = false
+          paint = false
+          erase = true
+        }
+      }
 
       buttons.forEach(button => {
         button.addEventListener('click', () => {
-          if (button.id === 'move') {
-            move = true
-            paint = false
-            erase = false
-          } else if (button.id === 'paint') {
-            move = false
-            paint = true
-            erase = false
-          } else if (button.id === 'erase') {
-            move = false
-            paint = false
-            erase = true
-          }
+          updateSelectedButton(button)
+          localStorage.setItem('lastTool', button.id)
           selectedButton.classList.remove('selected')
           button.classList.add('selected')
           selectedButton = button
         })
       })
 
-      let originPos = { x: 0, y: 0 }
+      let originPos = JSON.parse(localStorage.getItem('lastOrigin')) || {
+        x: 0,
+        y: 0
+      }
 
-      let paint = false
-      let erase = false
-      let move = true
+      const lastAction = []
 
       let lastMouse = { x: 0, y: 0 }
 
@@ -210,8 +238,6 @@
       }
 
       function getChunkFromWorldPos(x, y) {
-        console.log('Get chunk from world pos:', x, y)
-
         return {
           x: Math.floor(x / gridSize),
           y: Math.floor(y / gridSize)
@@ -298,10 +324,18 @@
           paint = false
           move = true
         }
+
+        if (e.button === 0 && paint) {
+          paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
+          drawGrid()
+          console.log(mouseState)
+          return
+        }
       })
 
       canvas.addEventListener('mouseup', e => {
         mouseState = 'off'
+        localStorage.setItem('lastOrigin', JSON.stringify(originPos))
 
         console.log('Mouse Up at:', e.clientX, e.clientY)
         console.log('paint ', paint)
@@ -356,6 +390,17 @@
 
       canvas.addEventListener('contextmenu', e => {
         e.preventDefault()
+      })
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          const info = document.querySelector('.info')
+          if (info.style.display === 'none') {
+            info.style.display = 'flex'
+          } else {
+            info.style.display = 'none'
+          }
+        }
       })
 
       drawGrid()
