@@ -80,6 +80,12 @@
         width: 48px;
         height: 48px;
       }
+
+      #escInfo {
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
@@ -93,6 +99,10 @@
       <button id="paint">
         <img class="icons" src="assets/paint-brush.svg" alt="paint" />
       </button>
+
+      <button id="erase">
+        <img class="icons" src="assets/eraser-fill.svg" alt="erase" />
+      </button>
     </nav>
 
     <div class="info">
@@ -100,14 +110,36 @@
       <span id="startXY">start X, Y = [0, 0]</span>
       <span id="originPosXY">origin X, Y = [0, 0]</span>
       <span id="globalMousePosXY">global Mouse X, Y = [0, 0]</span>
+      <span id="escInfo">press "esc" to hide</span>
     </div>
 
     <button id="clear" onclick="clearGrid()">clear</button>
 
     <script>
+      const defaultStates = {
+        move: {
+          move: true,
+          paint: false,
+          erase: false
+        },
+        paint: {
+          move: false,
+          paint: true,
+          erase: false
+        },
+        erase: {
+          move: false,
+          paint: false,
+          erase: true
+        }
+      }
+
+      function exitToCurrentState() {}
+
       const buttons = [
         document.getElementById('move'),
-        document.getElementById('paint')
+        document.getElementById('paint'),
+        document.getElementById('erase')
       ]
       let selectedButton = buttons[0]
 
@@ -121,6 +153,10 @@
             move = false
             paint = true
             erase = false
+          } else if (button.id === 'erase') {
+            move = false
+            paint = false
+            erase = true
           }
           selectedButton.classList.remove('selected')
           button.classList.add('selected')
@@ -135,6 +171,8 @@
       let move = true
 
       let lastMouse = { x: 0, y: 0 }
+
+      let mouseState = 'off'
 
       let globalMousePos = { x: 0, y: 0 }
 
@@ -204,8 +242,6 @@
 
       square.setChunk({ x: 16, y: 16 })
 
-      let mouseState = 'off'
-
       const canvas = document.getElementById('canvas')
       const ctx = canvas.getContext('2d')
 
@@ -251,38 +287,30 @@
       canvas.addEventListener('mousedown', e => {
         mouseState = 'on'
 
-        if (selectedButton.id === 'paint') {
-        }
-
-        if (e.button === 2) {
-          erase = true
-        }
-        if (e.button === 0) {
-          paint = true
-        }
-
         console.log('Mouse Down at:', e.clientX, e.clientY)
         lastMouse.x = e.clientX
         lastMouse.y = e.clientY
         startOrigin.x = originPos.x
         startOrigin.y = originPos.y
+
+        if (e.button === 1) {
+          erase = false
+          paint = false
+          move = true
+        }
       })
 
       canvas.addEventListener('mouseup', e => {
         mouseState = 'off'
 
-        if (e.button === 2 && erase) {
-          Erase()
-        }
-
-        if (e.button === 0 && paint) {
-          paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
-        }
-
-        drawGrid()
-
         console.log('Mouse Up at:', e.clientX, e.clientY)
         console.log('paint ', paint)
+
+        if (e.button === 1) {
+          erase = defaultStates[selectedButton.id].erase
+          paint = defaultStates[selectedButton.id].paint
+          move = defaultStates[selectedButton.id].move
+        }
       })
 
       canvas.addEventListener('mousemove', e => {
@@ -299,32 +327,30 @@
         document.getElementById('globalMousePosXY').textContent =
           'mouse_global: [' + globalMousePos.x + ', ' + globalMousePos.y + ']'
 
-        if (selectedButton.id === 'paint' && mouseState === 'on') {
+        if (paint && mouseState === 'on') {
           paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
           drawGrid()
           console.log(mouseState)
           return
         }
 
-        if (mouseState === 'on' && move) {
+        if (erase && mouseState === 'on') {
+          Erase()
+          console.log(mouseState)
+          return
+        }
+
+        if (move && mouseState === 'on') {
           const deltaX = e.clientX - lastMouse.x
           const deltaY = e.clientY - lastMouse.y
 
-          // this is causing the grid to move 10 in 10 or so
-          // need to fix it
-          // made this to prevent small movements from triggering panning
-          if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-            paint = false
-            erase = false
+          originPos.x += deltaX
+          originPos.y += deltaY
 
-            originPos.x += deltaX
-            originPos.y += deltaY
+          lastMouse.x = e.clientX
+          lastMouse.y = e.clientY
 
-            lastMouse.x = e.clientX
-            lastMouse.y = e.clientY
-
-            drawGrid()
-          }
+          drawGrid()
         }
       })
 
