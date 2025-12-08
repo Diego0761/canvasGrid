@@ -30,6 +30,20 @@
       span {
         color: white;
       }
+
+      #clear {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #444;
+        color: white;
+        font-size: 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+      }
     </style>
   </head>
   <body>
@@ -41,6 +55,7 @@
       <span id="originPosXY">origin X, Y = 0, 0</span>
       <span id="globalMousePosXY">global Mouse X, Y = 0, 0</span>
     </div>
+    <button id="clear" onclick="clearGrid()">clear</button>
 
     <script>
       let originPos = { x: 0, y: 0 }
@@ -66,7 +81,8 @@
         size: gridSize
       }
 
-      let coloredChunks = [{ x: 20, y: 20 }]
+      let coloredChunks =
+        JSON.parse(localStorage.getItem('coloredChunks')) || []
 
       function paintChunk({ x, y }) {
         const chunk = coloredChunks.some(
@@ -80,6 +96,8 @@
           console.log('Painted chunk at:', x, y)
           console.log('Colored Chunks:', coloredChunks)
         }
+
+        localStorage.setItem('coloredChunks', JSON.stringify(coloredChunks))
       }
 
       function getChunkFromWorldPos(x, y) {
@@ -89,6 +107,13 @@
           x: Math.floor(x / gridSize),
           y: Math.floor(y / gridSize)
         }
+      }
+
+      function clearGrid() {
+        coloredChunks = []
+        localStorage.removeItem('coloredChunks')
+        drawGrid()
+        console.log('Cleared grid and localStorage')
       }
 
       function Erase() {
@@ -101,6 +126,7 @@
             c => !(c.x === chunk.x && c.y === chunk.y)
           )
           console.log('Erased chunk at:', chunk.x, chunk.y)
+          localStorage.setItem('coloredChunks', JSON.stringify(coloredChunks))
           drawGrid()
         }
       }
@@ -159,7 +185,9 @@
         if (e.button === 2) {
           erase = true
         }
-        paint = true
+        if (e.button === 0) {
+          paint = true
+        }
 
         console.log('Mouse Down at:', e.clientX, e.clientY)
         lastMouse.x = e.clientX
@@ -207,9 +235,9 @@
 
           //check if mouse moved enough to be considered paining
 
-          // this is causing the grid moving 3 in 3 or so
-          // need to fix
-          if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3 || e.button != 1) {
+          // this is causing the grid moving 10 in 10 or so
+          // need to fix it
+          if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
             paint = false
             erase = false
 
