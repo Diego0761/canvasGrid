@@ -1,0 +1,107 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+canvas {
+  display: block;
+}
+
+.info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgb(7, 7, 7);
+  padding: 5px;
+  border-radius: 5px;
+  font-family: Arial, san s-serif;
+  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+span {
+  color: white;
+}
+
+#clear {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #444;
+  color: white;
+  font-size: 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+nav {
+  display: flex;
+  background-color: #fff4c4;
+  height: 100px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+nav > button {
+  background-color: white;
+  border: none;
+  color: white;
+  font-size: 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+nav > button.selected {
+  border: 2px solid rgb(252, 125, 125);
+}
+
+nav > button:hover {
+  background-color: #eeeeee;
+}
+
+canvas:hover {
+  cursor: url('assets/dot-outline.svg') 16 16, auto;
+}
+
+.icons {
+  width: 48px;
+  height: 48px;
+}
+
+#escInfo {
+  font-size: 12px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.colorpicker {
+  position: absolute;
+  top: 120px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.color {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.selected-color {
+  border: 3px solid #f07affff;
+  box-sizing: border-box;
+}
