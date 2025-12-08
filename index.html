@@ -46,6 +46,7 @@
       let originPos = { x: 0, y: 0 }
 
       let paint = false
+      let erase = false
 
       let lastMouse = { x: 0, y: 0 }
 
@@ -67,7 +68,7 @@
 
       let coloredChunks = [{ x: 20, y: 20 }]
 
-      function paintChunk(x, y) {
+      function paintChunk({ x, y }) {
         const chunk = coloredChunks.some(
           chunk => chunk.x === x && chunk.y === y
         )
@@ -90,8 +91,18 @@
         }
       }
 
-      function getChunkBySize(d) {
-        return Math.floor((d - (d % gridSize)) / gridSize)
+      function Erase() {
+        erase = true
+
+        const chunk = getChunkFromWorldPos(globalMousePos.x, globalMousePos.y)
+
+        if (coloredChunks.some(c => c.x === chunk.x && c.y === chunk.y)) {
+          coloredChunks = coloredChunks.filter(
+            c => !(c.x === chunk.x && c.y === chunk.y)
+          )
+          console.log('Erased chunk at:', chunk.x, chunk.y)
+          drawGrid()
+        }
       }
 
       square.setChunk({ x: 16, y: 16 })
@@ -144,6 +155,10 @@
 
       canvas.addEventListener('mousedown', e => {
         mouseState = 'on'
+
+        if (e.button === 2) {
+          erase = true
+        }
         paint = true
 
         console.log('Mouse Down at:', e.clientX, e.clientY)
@@ -156,11 +171,12 @@
       canvas.addEventListener('mouseup', e => {
         mouseState = 'off'
 
-        if (paint) {
-          paintChunk(
-            getChunkFromWorldPos(globalMousePos.x, globalMousePos.y).x,
-            getChunkFromWorldPos(globalMousePos.x, globalMousePos.y).y
-          )
+        if (e.button === 2 && erase) {
+          Erase()
+        }
+
+        if (e.button === 0 && paint) {
+          paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
         }
 
         drawGrid()
@@ -190,8 +206,12 @@
           const deltaY = e.clientY - lastMouse.y
 
           //check if mouse moved enough to be considered paining
-          if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+
+          // this is causing the grid moving 3 in 3 or so
+          // need to fix
+          if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3 || e.button != 1) {
             paint = false
+            erase = false
 
             originPos.x += deltaX
             originPos.y += deltaY
@@ -206,16 +226,6 @@
 
       canvas.addEventListener('contextmenu', e => {
         e.preventDefault()
-
-        const chunk = getChunkFromWorldPos(globalMousePos.x, globalMousePos.y)
-
-        if (coloredChunks.some(c => c.x === chunk.x && c.y === chunk.y)) {
-          coloredChunks = coloredChunks.filter(
-            c => !(c.x === chunk.x && c.y === chunk.y)
-          )
-          console.log('Erased chunk at:', chunk.x, chunk.y)
-          drawGrid()
-        }
       })
 
       drawGrid()
