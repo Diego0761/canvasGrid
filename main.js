@@ -166,19 +166,6 @@ function drawGrid() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.strokeStyle = '#00000033'
 
-  for (chunk in coloredChunks) {
-    const c = coloredChunks[chunk]
-
-    ctx.fillStyle = c.color || '#000000'
-
-    ctx.fillRect(
-      c.x * gridSize + originPos.x,
-      c.y * gridSize + originPos.y,
-      gridSize,
-      gridSize
-    )
-  }
-
   startX = (originPos.x % gridSize) - gridSize
   startY = (originPos.y % gridSize) - gridSize
 
@@ -194,6 +181,19 @@ function drawGrid() {
     ctx.moveTo(0, y)
     ctx.lineTo(canvas.width, y)
     ctx.stroke()
+  }
+
+  for (chunk in coloredChunks) {
+    const c = coloredChunks[chunk]
+
+    ctx.fillStyle = c.color || '#000000'
+
+    ctx.fillRect(
+      c.x * gridSize + originPos.x,
+      c.y * gridSize + originPos.y,
+      gridSize,
+      gridSize
+    )
   }
 }
 
