@@ -105,3 +105,15 @@ canvas:hover {
   border: 3px solid #f07affff;
   box-sizing: border-box;
 }
+
+.slidecontainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.slidecontainer span {
+  font-size: 20px;
+  color: black;
+  margin-bottom: 4px;
+}
+
