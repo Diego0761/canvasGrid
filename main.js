@@ -1,8 +1,9 @@
 // TODO
 // ctrl + z to undo last paint/erase action
-// color picker
 // preview under cursor
-// different brush sizes
+// apply the brush size to the erase
+// brush shape (circle/square)
+// touch support
 
 let paint = false
 let erase = false
@@ -106,10 +107,10 @@ let coloredChunks = JSON.parse(localStorage.getItem('coloredChunks')) || []
 function paintChunk({ x, y }) {
   const chunk = coloredChunks.some(chunk => chunk.x === x && chunk.y === y)
 
-  //get chunk index from coloredChunks
   const chunkIndex = coloredChunks.findIndex(
     chunk => chunk.x === x && chunk.y === y
   )
+
   chunkIndex !== -1 && (coloredChunks[chunkIndex].color = selectedColor)
 
   if (!chunk) {
@@ -121,6 +122,13 @@ function paintChunk({ x, y }) {
   }
 
   localStorage.setItem('coloredChunks', JSON.stringify(coloredChunks))
+}
+
+function globalPosToLocalPos(x, y) {
+  return {
+    x: x - originPos.x,
+    y: y - originPos.y
+  }
 }
 
 function getChunkFromWorldPos(x, y) {
@@ -158,44 +166,6 @@ const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
 let startX, startY
-
-function drawGrid() {
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight - 100
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.strokeStyle = '#00000033'
-
-  startX = (originPos.x % gridSize) - gridSize
-  startY = (originPos.y % gridSize) - gridSize
-
-  for (let x = startX; x <= canvas.width; x += gridSize) {
-    ctx.beginPath()
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, canvas.height)
-    ctx.stroke()
-  }
-
-  for (let y = startY; y <= canvas.height; y += gridSize) {
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(canvas.width, y)
-    ctx.stroke()
-  }
-
-  for (chunk in coloredChunks) {
-    const c = coloredChunks[chunk]
-
-    ctx.fillStyle = c.color || '#000000'
-
-    ctx.fillRect(
-      c.x * gridSize + originPos.x,
-      c.y * gridSize + originPos.y,
-      gridSize,
-      gridSize
-    )
-  }
-}
 
 // -----
 
