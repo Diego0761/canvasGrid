@@ -215,12 +215,20 @@ canvas.addEventListener('mousedown', e => {
   }
 
   if (e.button === 0 && paint) {
-    paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
+    Paint()
     drawGrid()
     console.log(mouseState)
     return
   }
 })
+
+function Paint() {
+  getAroundChunks(globalMousePos.x, globalMousePos.y, brushSize - 1).forEach(
+    chunk => {
+      paintChunk(chunk)
+    }
+  )
+}
 
 canvas.addEventListener('mouseup', e => {
   mouseState = 'off'
@@ -237,21 +245,24 @@ canvas.addEventListener('mouseup', e => {
 })
 
 canvas.addEventListener('mousemove', e => {
-  document.getElementById('mouseXY').textContent =
-    'mouse_local: [' + e.clientX + ', ' + e.clientY + ']'
-  document.getElementById('startXY').textContent =
-    'start: [' + startX + ', ' + startY + ']'
-  document.getElementById('originPosXY').textContent =
-    'origin: [' + originPos.x + ', ' + originPos.y + ']'
-
+  document.getElementById(
+    'mouseXY'
+  ).textContent = `mouse_local: [${e.clientX}, ${e.clientY}]`
+  document.getElementById(
+    'startXY'
+  ).textContent = `start: [${startX}, ${startY}]`
+  document.getElementById(
+    'originPosXY'
+  ).textContent = `origin: [${originPos.x}, ${originPos.y}]`
   globalMousePos.x = e.clientX - originPos.x
   globalMousePos.y = e.clientY - originPos.y
 
-  document.getElementById('globalMousePosXY').textContent =
-    'mouse_global: [' + globalMousePos.x + ', ' + globalMousePos.y + ']'
+  document.getElementById(
+    'globalMousePosXY'
+  ).textContent = `mouse_global: [${globalMousePos.x}, ${globalMousePos.y}]`
 
   if (paint && mouseState === 'on') {
-    paintChunk(getChunkFromWorldPos(globalMousePos.x, globalMousePos.y))
+    Paint()
     drawGrid()
     return
   }
@@ -289,6 +300,17 @@ document.addEventListener('keydown', e => {
     }
   }
 })
+
+function getAroundChunks(x, y, range) {
+  const middleChunk = getChunkFromWorldPos(x, y)
+  const chunks = []
+  for (let i = -range; i <= range; i++) {
+    for (let j = -range; j <= range; j++) {
+      chunks.push({ x: middleChunk.x + i, y: middleChunk.y + j })
+    }
+  }
+  return chunks
+}
 
 drawGrid()
 
