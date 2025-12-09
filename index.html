@@ -20,6 +20,18 @@
       <button id="erase">
         <img class="icons" src="assets/eraser-fill.svg" alt="erase" />
       </button>
+
+      <div class="slidecontainer">
+        <span id="bs">brush size: 1</span>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value="1"
+          class="slider"
+          id="brushSize"
+        />
+      </div>
     </nav>
 
     <div class="info">
@@ -40,7 +52,7 @@
 
     <button id="clear" onclick="clearGrid()">clear</button>
     <script src="colorpicker.js"></script>
-
+    <script src="brushsize.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
