@@ -24,6 +24,15 @@ function drawGrid() {
     ctx.stroke()
   }
 
+  // //draw preview
+  // if (paint || erase) {
+  //   const chunk = getChunkFromWorldPos(globalMousePos.x, globalMousePos.y)
+  //   ctx.fillStyle = '#e90a0a88'
+  //   ctx.fillRect(chunk.x * gridSize + originPos.x, chunk.y * gridSize + originPos.y, gridSize, gridSize)
+  // }
+}
+
+function drawPixels() {
   for (chunk in coloredChunks) {
     const c = coloredChunks[chunk]
 
@@ -36,11 +45,9 @@ function drawGrid() {
       gridSize
     )
   }
+}
 
-  // //draw preview
-  // if (paint || erase) {
-  //   const chunk = getChunkFromWorldPos(globalMousePos.x, globalMousePos.y)
-  //   ctx.fillStyle = '#e90a0a88'
-  //   ctx.fillRect(chunk.x * gridSize + originPos.x, chunk.y * gridSize + originPos.y, gridSize, gridSize)
-  // }
+function render() {
+  drawGrid()
+  drawPixels()
 }
