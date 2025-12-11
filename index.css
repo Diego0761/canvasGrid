@@ -88,22 +88,22 @@ canvas:hover {
 
 .colorpicker {
   position: absolute;
-  top: 120px;
+  top: 115px;
   right: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+.selected-color {
+  border: 3px solid #f07affff;
+  box-sizing: border-box;
+}
+
 .color {
   width: 40px;
   height: 40px;
   cursor: pointer;
-}
-
-.selected-color {
-  border: 3px solid #f07affff;
-  box-sizing: border-box;
 }
 
 .slidecontainer {
@@ -116,4 +116,3 @@ canvas:hover {
   color: black;
   margin-bottom: 4px;
 }
-
