@@ -141,7 +141,7 @@ function getChunkFromWorldPos(x, y) {
 function clearGrid() {
   coloredChunks = []
   localStorage.removeItem('coloredChunks')
-  drawGrid()
+  render()
   console.log('Cleared grid and localStorage')
 }
 
@@ -156,7 +156,7 @@ function Erase() {
     )
     console.log('Erased chunk at:', chunk.x, chunk.y)
     localStorage.setItem('coloredChunks', JSON.stringify(coloredChunks))
-    drawGrid()
+    render()
   }
 }
 
@@ -186,7 +186,7 @@ canvas.addEventListener('mousedown', e => {
 
   if (e.button === 0 && paint) {
     Paint()
-    drawGrid()
+    render()
     console.log(mouseState)
     return
   }
@@ -233,7 +233,7 @@ canvas.addEventListener('mousemove', e => {
 
   if (paint && mouseState === 'on') {
     Paint()
-    drawGrid()
+    drawPixels()
     return
   }
 
@@ -252,7 +252,7 @@ canvas.addEventListener('mousemove', e => {
     lastMouse.x = e.clientX
     lastMouse.y = e.clientY
 
-    drawGrid()
+    render()
   }
 })
 
